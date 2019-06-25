@@ -1,8 +1,7 @@
 import os
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse
-from bot import Bot
-from botTito import BotTito
+import botTito
 parser = reqparse.RequestParser()
 
 def create_app(test_config=None):
@@ -11,7 +10,6 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev'
     )
-
     try:
         os.makedirs(app.instance_path)
     except OSError:
@@ -23,8 +21,8 @@ def create_app(test_config=None):
             return 'Hello, World!'
         else:
             return str(request)
-    api.add_resource(BotTito,'/tito')
-
+    api.add_resource(botTito.BotTito,'/tito')
     return app
+
 app = create_app()
 
