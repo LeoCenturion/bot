@@ -26,3 +26,5 @@ def create_app(test_config=None):
     api.add_resource(BotTito,'/tito')
 
     return app
+app = create_app()
+
