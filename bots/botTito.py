@@ -23,6 +23,7 @@ class BotTito(bot.Bot):
                                                  msg['metadata']['firebaseToken']),
             'info': lambda msg: self.getChannelInfo(msg['metadata']['orgId'],
                                                     msg['metadata']['channel'],
+                                                    msg['metadata']['apiToken'],
                                                     msg['metadata']['firebaseToken']),
             'greet':lambda msg: self.greetNewMember(msg['metadata']['channel'],
                                                   msg['metadata']['senderEmail'],
@@ -60,11 +61,11 @@ class BotTito(bot.Bot):
                   .format(data['name'],data['nickname'],data['email'])
         return self.sendToFirebase(message ,firebaseToken)
 
-    def getChannelInfo(self,orgId,channelName,token):
+    def getChannelInfo(self,orgId,channelName,token, firebaseToken):
         url = str(urls.urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
         response = requests.get(url)
-        msgCount = 0
-        return response.json()
+        message = response.content
+        return self.sendToFirebase(message ,firebaseToken)
 
     def greetNewMember(self,channelName,email,token):
         message = "Bienvenido {} al canal {}".format(email,channelName)
@@ -74,7 +75,7 @@ class BotTito(bot.Bot):
         firebase = pyrebase.initialize_app(config)
         db = firebase.database()
         data = {"email" : "",
-                "hora" : str(dt.datetime.now()),
+                "hora" : {".sv":"timestamp"},
                 "nickname" : "titoElBot",
                 "texto" : message,
                 "url_foto_perfil" : ""

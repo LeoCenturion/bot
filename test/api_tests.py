@@ -20,8 +20,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 class TestApi(unittest.TestCase):
-    def assertEqualInDB(self,rv,expected):
-        print rv.data
+    def assertEqualInDB(self,rv,channel,expected):
         msgId = json.loads(rv.data.replace("'","\""))['name']
         msg = db.child(channel).child(msgId).get().val()['texto']
         db.child(channel).child(msgId).remove()
@@ -37,7 +36,7 @@ class TestApi(unittest.TestCase):
                             }}
         expected = 'Available commands: help, info, mute<n>, me'
         rv = api.post(endpoint,json=body)
-        self.assertEqualInDB(rv,expected)
+        self.assertEqualInDB(rv,channel,expected)
 
     def test_greet_new_user(self):
         api = bots.create_app().test_client()
@@ -50,7 +49,7 @@ class TestApi(unittest.TestCase):
         }
         expected = "Bienvenido {} al canal {}".format("user@email.com",'canaleta')
         rv = api.post(endpoint,json=body)
-        self.assertEqualInDB(rv,expected)
+        self.assertEqualInDB(rv,channel,expected)
 
     def test_user_info(self):
         api = bots.create_app().test_client()
@@ -66,7 +65,27 @@ class TestApi(unittest.TestCase):
         expected = "username {}, alias {}. Contact {}"\
                   .format("victoria","vicky","test@1.com")
         rv = api.post(endpoint,json=body)
-        self.assertEqualInDB(rv,expected)
+        self.assertEqualInDB(rv,channel,expected)
+
+
+    def test_channel_info(self):
+        api = bots.create_app().test_client()
+        channel = "5d0257e9b3a8033023c420e5"
+        apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1ZDAxNzI0NzhjNmI4ZDAwMTcxODU0NDgifQ.tMtWn63rqytzXuLDtrT0wHj_84eGzJ_BmZ8rniNnU5w"
+        body = {'message':'info',
+                'metadata':{'firebaseToken':channel,
+                            'channel':'general',
+                            'senderEmail':"test@1.com",
+                            'apiToken': apiToken,
+                            'orgId':"admin2019",
+                }
+        }
+        url = str(urls.urls['hypechat']['channelInfo'].format(orgId="admin2019", channelName="general",token=apiToken))
+        expected =  requests.get(url).content
+        rv = api.post(endpoint,json=body)
+        self.assertEqualInDB(rv,channel,expected)
+
+
 if __name__=='__main__':
     unittest.main()
 
