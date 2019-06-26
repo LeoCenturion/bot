@@ -2,7 +2,7 @@ from . import bot
 from flask import request
 import datetime as dt
 import requests
-from urls import urls
+from . import urls
 class BotTito(bot.Bot):
     def __init__(self):
         super(BotTito,self).__init__()
@@ -34,12 +34,12 @@ class BotTito(bot.Bot):
         return (self.wakeUpTime>dt.datetime.now())
 
     def getUserInfo(self,userEmail):
-        url = str(urls['hypechat']['userInfo']).format(email=userEmail )
+        url = str(urls.urls['hypechat']['userInfo']).format(email=userEmail )
         response = requests.get(url)
         return response.json()
 
     def getChannelInfo(self,orgId,channelName,token):
-        url = str(urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
+        url = str(urls.urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
         response = requests.get(url)
         return response.json()
 
