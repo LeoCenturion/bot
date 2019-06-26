@@ -23,21 +23,22 @@ class BotTito(bot.Bot):
                                                     msg['metadata']['firebaseToken']),
             'greet':lambda msg: self.greetNewMember(msg['metadata']['channel'],
                                                   msg['metadata']['senderEmail'],
-                                                  msg['metadata']['firebaseToken']
-            )
+                                                    msg['metadata']['firebaseToken'] ),
         })
 
     def post(self):
  #       if(self.isMuted()):
   #          return
         message = request.get_json()
-
         message = self._parseMessage(message)
-        return self._handleMessage(message)
+        try:
+            return self._handleMessage.get(message)
+        except: 
+            return "Command not found",400
 
     def help(self,token):
         helpMessage = 'Available commands: help, info, mute<n>, me'
-        return self.sendToFirebase(helpMessage,token )
+        return self.sendToFirebase(helpMessage,token ), 200
 
     def mute(self,n):
 #        url = str(urls)
