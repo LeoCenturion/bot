@@ -23,7 +23,7 @@ class BotTito(bot.Bot):
                                                     msg['metadata']['firebaseToken']),
             'greet':lambda msg: self.greetNewMember(msg['metadata']['channel'],
                                                   msg['metadata']['senderEmail'],
-                                                    msg['metadata']['firebaseToken'] ),
+                                                    msg['metadata']['firebaseToken']),
         })
 
     def post(self):
@@ -32,9 +32,10 @@ class BotTito(bot.Bot):
         message = request.get_json()
         message = self._parseMessage(message)
         try:
-            return self._handleMessage.get(message)
-        except: 
-            return "Command not found",400
+            return self._handleMessage(message)
+        except:
+            return "Command not found", 400
+
 
     def help(self,token):
         helpMessage = 'Available commands: help, info, mute<n>, me'
@@ -55,6 +56,7 @@ class BotTito(bot.Bot):
     def getChannelInfo(self,orgId,channelName,token):
         url = str(urls.urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
         response = requests.get(url)
+        msgCount = 0
         return response.json()
 
     def greetNewMember(self,channelName,email,token):
