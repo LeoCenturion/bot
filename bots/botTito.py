@@ -1,19 +1,18 @@
-from bot import Bot
+from . import bot
 from flask import request
 import datetime as dt
 import requests
 from urls import urls
-class BotTito(Bot):
+class BotTito(bot.Bot):
     def __init__(self):
         super(BotTito,self).__init__()
-        self.handlers.update( {
+        self.handlers.update({
             'help': lambda msg: self.help(),
             'mute': lambda msg: self.mute(msg['parameters'][0]),
             'me'  : lambda msg: self.getUserInfo(msg['parameters'][0]),
             'info': lambda msg: self.getChannelInfo(msg['metadata']['orgId'],
                                                     msg['metadata']['channelInfo'],
                                                     msg['metadata']['token'])
-
         })
 
     def post(self):
@@ -43,3 +42,4 @@ class BotTito(Bot):
         url = str(urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
         response = requests.get(url)
         return response.json()
+

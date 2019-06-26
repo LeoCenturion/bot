@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse
-import botTito
+from . import botTito
 parser = reqparse.RequestParser()
 
 def create_app(test_config=None):
