@@ -2,6 +2,8 @@ import unittest
 import sys
 sys.path.append('../')
 import bots
+from bots import botTito
+from bots import bot
 import mock
 import requests
 from bots import urls
@@ -24,14 +26,18 @@ def mocked_get(*args, **kwargs):
                              "messages":"128"},200)
     return MockResponse(None, 404)
 
+def mocked_sendToFirebase(message,token):
+    s = message
+    return s
+
 class TestBot(unittest.TestCase):
     def test_message_parser(self):
-        bot = bots.Bot()
+        b = bot.Bot()
         messageToParse = {'metadata':{'orgId':123,
                                       'token':321,
                                       'channel':'canaleta' },
                           'message':'a b c'}
-        parsed = bot._parseMessage(messageToParse)
+        parsed = b._parseMessage(messageToParse)
         expected = {'action':'a',
                     'parameters': ['b', 'c'],
                     'metadata':{'orgId':123,
@@ -43,39 +49,47 @@ class TestBot(unittest.TestCase):
 
 
     def test_defaultHandling(self):
-        bot = bots.Bot()
+        b = bot.Bot()
 
-        bot.handlers = {
+        b.handlers = {
             'add': lambda args: int(args['parameters'][0]) + int(args['parameters'][1])
         }
-        result = bot._handleMessage(bot._parseMessage({'message':'add 3 5','metadata':''  }))
+        result = b._handleMessage(b._parseMessage({'message':'add 3 5','metadata':''  }))
         self.assertEqual(result,3+5)
 
 class TestBotTito(unittest.TestCase):
     def test_help(self):
-        tito = bots.BotTito()
+        tito = botTito.BotTito()
         expectedResponse = 'Available commands: help, info, mute<n>, me'
         self.assertEqual(tito.help(),expectedResponse)
 
     def test_mute(self):
-        tito = bots.BotTito()
+        tito = botTito.BotTito()
         tito.mute(10)
         self.assertEqual(tito.isMuted(),True)
 
     def test_me(self):
         requests.get = mocked_get
-        tito = bots.BotTito()
+        tito = botTito.BotTito()
         response = tito.getUserInfo("juan@perez.com")
         self.assertEqual(response,{"name": "juan",
                                    "nickname": "perez",
                                    "email":"juan@perez.com"})
     def test_info(self):
         requests.get = mocked_get
-        tito = bots.BotTito()
+        tito = botTito.BotTito()
         response = tito.getChannelInfo("1234","canaleta","321")
         self.assertEqual(response,{"name": "canaleta",
                                    "members": ["perdo","juan","adriana"],
                                    "messages":"128"})
+    def test_greet_member(self):
+        requests.get = mocked_get
+        tito = botTito.BotTito()
+        tito.sendToFirebase = mocked_sendToFirebase
+        response = tito.greetNewMember("canaleta","e@mail.com","token")
+        expected = "Bienvenido {} al canal {}".format("e@mail.com","canaleta")
+        self.assertEqual(response,expected)
+
 if __name__=='__main__':
     unittest.main()
 
