@@ -21,6 +21,7 @@ firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 class TestApi(unittest.TestCase):
     def assertEqualInDB(self,rv,expected):
+        print rv.data
         msgId = json.loads(rv.data.replace("'","\""))['name']
         msg = db.child(channel).child(msgId).get().val()['texto']
         db.child(channel).child(msgId).remove()
@@ -51,6 +52,21 @@ class TestApi(unittest.TestCase):
         rv = api.post(endpoint,json=body)
         self.assertEqualInDB(rv,expected)
 
+    def test_user_info(self):
+        api = bots.create_app().test_client()
+        apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1ZDAxNzI0NzhjNmI4ZDAwMTcxODU0NDgifQ.tMtWn63rqytzXuLDtrT0wHj_84eGzJ_BmZ8rniNnU5w"
+        body = {'message':'me',
+                'metadata':{'orgId':123,
+                            'firebaseToken':channel,
+                            'channel':'canaleta',
+                            'senderEmail':"test@1.com",
+                            'apiToken': apiToken
+                }
+        }
+        expected = "username {}, alias {}. Contact {}"\
+                  .format("victoria","vicky","test@1.com")
+        rv = api.post(endpoint,json=body)
+        self.assertEqualInDB(rv,expected)
 if __name__=='__main__':
     unittest.main()
 
