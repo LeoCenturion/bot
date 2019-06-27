@@ -49,7 +49,7 @@ class BotTito(bot.Bot):
 
     def mute(self,n):
         botWakeUpTime = dt.datetime.now() + dt.timedelta(0,minutes=int(n))
-        t.sleep(int(n))
+        t.sleep(int(n)*60)
         return 200
 
     def isMuted(self):
@@ -67,7 +67,9 @@ class BotTito(bot.Bot):
         url = str(urls.urls['hypechat']['channelInfo'].format(orgId=orgId, channelName=channelName,token=token))
         response = requests.get(url)
         message = response.content
-        return self.sendToFirebase(message ,firebaseToken)
+        msg_count = self.countMessagesInChannel(firebaseToken)
+        formated = self.formatChannelInfoMessage(message,msg_count)
+        return self.sendToFirebase(formated ,firebaseToken)
 
     def greetNewMember(self,channelName,email,token):
         message = "Bienvenido {} al canal {}".format(email,channelName)
@@ -83,3 +85,15 @@ class BotTito(bot.Bot):
                 "url_foto_perfil" : ""
         }
         return db.child(token).push(data)
+
+    def countMessagesInChannel(self,token):
+        firebase = pyrebase.initialize_app(config)
+        db = firebase.database()
+        count = len(db.child(token).get().key())
+        return count
+
+    def formatChannelInfoMessage(self,message, msg_count):
+        d =json.loads( message.decode('string-escape').strip('"'))['channel']
+        members = [str(m) for m in d['members']]
+
+        return "Canal: {}, Integrantes: {}, Cantidad de Mensajes: {}, Descripcion: {},  Duenio: {}".format(d['name'], str(members),str(msg_count) ,d['description'], d['owner'])
