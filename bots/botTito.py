@@ -48,12 +48,10 @@ class BotTito(bot.Bot):
 
     def mute(self,n):
         botWakeUpTime = dt.datetime.now() + dt.timedelta(0,minutes=int(n))
-        t.sleep(60*int(n))
+        t.sleep(int(n))
         return 200
 
     def isMuted(self):
-        print "isMuted"
-        print botWakeUpTime
         return (botWakeUpTime > dt.datetime.now())
 
     def getUserInfo(self,userEmail, apiToken, firebaseToken):
