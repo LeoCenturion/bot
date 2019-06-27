@@ -40,7 +40,8 @@ class BotTito(bot.Bot):
             return self._handleMessage(message)
         except KeyError :
             return "Command not found", 400
-
+        except:
+            return "Server error", 500
 
     def help(self,token):
         helpMessage = 'Available commands: help, info, mute<n>, me'

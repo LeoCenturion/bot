@@ -21,7 +21,7 @@ firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 class TestApi(unittest.TestCase):
     def assertEqualInDB(self,rv,channel,expected):
-        msgId = json.loads(rv.data.replace("'","\""))['name']
+        msgId = json.loads(rv.data.decode('string-escape').strip('"'))['name']
         msg = db.child(channel).child(msgId).get().val()['texto']
         db.child(channel).child(msgId).remove()
         self.assertEqual(msg, expected)
@@ -54,10 +54,11 @@ class TestApi(unittest.TestCase):
     def test_user_info(self):
         api = bots.create_app().test_client()
         apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1ZDAxNzI0NzhjNmI4ZDAwMTcxODU0NDgifQ.tMtWn63rqytzXuLDtrT0wHj_84eGzJ_BmZ8rniNnU5w"
+
         body = {'message':'me',
-                'metadata':{'orgId':123,
+                'metadata':{'orgId':'admin2019',
                             'firebaseToken':channel,
-                            'channel':'canaleta',
+                            'channel':'general',
                             'senderEmail':"test@1.com",
                             'apiToken': apiToken
                 }
@@ -65,7 +66,7 @@ class TestApi(unittest.TestCase):
         expected = "username {}, alias {}. Contact {}"\
                   .format("victoria","vicky","test@1.com")
         rv = api.post(endpoint,json=body)
-
+#        rv.data = rv.data.decode('string-escape').strip('"')[:-2]
         self.assertEqualInDB(rv,channel,expected)
 
 
@@ -86,26 +87,8 @@ class TestApi(unittest.TestCase):
         rv = api.post(endpoint,json=body)
         self.assertEqualInDB(rv,channel,expected)
 
-    def test_mute(self):
-        api = bots.create_app().test_client()
-        body = {'message':'mute 10',
-                'metadata':{'firebaseToken':channel,
-                            'channel':'general',
-                            'senderEmail':"test@1.com",
-                            'orgId':"admin2019",
-                }
-        }
-        expected =  None
-        rv = api.post(endpoint,json=body)
-        body = {'message':'help',
-                'metadata':{"orgId":123,
-                            "firebaseToken":channel,
-                            "channel":'canaleta',
-                            "senderEmail":"user@email.com"
-                            }}
-        rv = api.post(endpoint,json=body)
-        self.assertEqual(rv.data.rstrip('\n'),'null')
 
 if __name__=='__main__':
     unittest.main()
 
+    
