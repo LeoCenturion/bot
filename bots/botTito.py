@@ -2,7 +2,7 @@ from . import bot
 from flask import request, g, config
 import datetime as dt
 import requests
-from . import urls
+from . import urls, db
 import pyrebase
 import datetime as dt
 import json
@@ -15,11 +15,12 @@ config = {
 }
 
 class BotTito(bot.Bot):
-    def __init__(self):
+    def __init__(self,wakeUp):
         super(BotTito,self).__init__()
+        self.wakeUp = wakeUp
         self.handlers.update({
             'help': lambda msg: self.help(msg['metadata']['firebaseToken']),
-            'mute': lambda msg: self.mute(msg['parameters'][0]),
+            'mute': lambda msg: self.mute(msg['parameters'][0], msg['metadata']['orgId'], msg['metadata']['channel']),
             'me': lambda msg: self.getUserInfo(msg['metadata']['senderEmail'],
                                                  msg['metadata']['apiToken'],
                                                  msg['metadata']['firebaseToken']),
@@ -35,6 +36,8 @@ class BotTito(bot.Bot):
     def post(self):
         message = request.get_json()
         message = self._parseMessage(message)
+        if self.isMuted(message['metadata']['orgId'], message['metadata']['channel']):
+            return 200
         return self._handleMessage(message)
         try:
             return self._handleMessage(message)
@@ -47,12 +50,15 @@ class BotTito(bot.Bot):
         helpMessage = 'Available commands: help, info, mute<n>, me'
         return self.sendToFirebase(helpMessage,token ), 200
 
-    def mute(self,n):
+    def mute(self,n,orgId,channelName,):
         botWakeUpTime = dt.datetime.now() + dt.timedelta(0,minutes=int(n))
-        t.sleep(int(n)*60)
+        self.wakeUp[orgId][channelName] = botWakeUpTime
         return 200
 
-    def isMuted(self):
+    def isMuted(self,orgId,channelName):
+        botWakeUpTime = self.wakeUp.get(orgId, {}).get(channelName, None)
+        if not botWakeUpTime:
+            botWakeUpTime = dt.datetime(1970,1,1)
         return (botWakeUpTime > dt.datetime.now())
 
     def getUserInfo(self,userEmail, apiToken, firebaseToken):

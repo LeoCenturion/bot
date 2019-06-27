@@ -83,7 +83,8 @@ class TestApi(unittest.TestCase):
                 }
         }
         url = str(urls.urls['hypechat']['channelInfo'].format(orgId="admin2019", channelName="general",token=apiToken))
-        expected =  requests.get(url).content
+
+        expected = u"Canal: general, Integrandes: [u'test@3.com', u'test@4.com', u'vickyperezbustos@gmail.com'], Cantidad de Mensajes: 5d0257e9b3a8033023c420e5, Descripcion: Canal general,  Duenio: test@3.com" 
         rv = api.post(endpoint,json=body)
         self.assertEqualInDB(rv,channel,expected)
 
