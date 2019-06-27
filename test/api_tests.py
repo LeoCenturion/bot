@@ -65,6 +65,7 @@ class TestApi(unittest.TestCase):
         expected = "username {}, alias {}. Contact {}"\
                   .format("victoria","vicky","test@1.com")
         rv = api.post(endpoint,json=body)
+
         self.assertEqualInDB(rv,channel,expected)
 
 
@@ -85,6 +86,25 @@ class TestApi(unittest.TestCase):
         rv = api.post(endpoint,json=body)
         self.assertEqualInDB(rv,channel,expected)
 
+    def test_mute(self):
+        api = bots.create_app().test_client()
+        body = {'message':'mute 10',
+                'metadata':{'firebaseToken':channel,
+                            'channel':'general',
+                            'senderEmail':"test@1.com",
+                            'orgId':"admin2019",
+                }
+        }
+        expected =  None
+        rv = api.post(endpoint,json=body)
+        body = {'message':'help',
+                'metadata':{"orgId":123,
+                            "firebaseToken":channel,
+                            "channel":'canaleta',
+                            "senderEmail":"user@email.com"
+                            }}
+        rv = api.post(endpoint,json=body)
+        self.assertEqual(rv.data.rstrip('\n'),'null')
 
 if __name__=='__main__':
     unittest.main()

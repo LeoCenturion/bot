@@ -1,17 +1,19 @@
 from . import bot
-from flask import request
+from flask import request, g, config
 import datetime as dt
 import requests
 from . import urls
 import pyrebase
 import datetime as dt
 import json
+import time as t
 config = {
     "apiKey": "AIzaSyCxp8GD6IHlziwPRBRKPubXkMGvMA3tzUw",
     "authDomain": "hypechat-taller2.firebaseapp.com",
     "databaseURL": "https://hypechat-taller2.firebaseio.com/",
     "storageBucket": "projectId.appspot.com"
 }
+
 class BotTito(bot.Bot):
     def __init__(self):
         super(BotTito,self).__init__()
@@ -31,8 +33,6 @@ class BotTito(bot.Bot):
         })
 
     def post(self):
- #       if(self.isMuted()):
-  #          return
         message = request.get_json()
         message = self._parseMessage(message)
         return self._handleMessage(message)
@@ -47,11 +47,14 @@ class BotTito(bot.Bot):
         return self.sendToFirebase(helpMessage,token ), 200
 
     def mute(self,n):
-#        url = str(urls)
-        self.wakeUpTime = dt.datetime.now() + dt.timedelta(int(n))
+        botWakeUpTime = dt.datetime.now() + dt.timedelta(0,minutes=int(n))
+        t.sleep(60*int(n))
+        return 200
 
     def isMuted(self):
-        return (self.wakeUpTime>dt.datetime.now())
+        print "isMuted"
+        print botWakeUpTime
+        return (botWakeUpTime > dt.datetime.now())
 
     def getUserInfo(self,userEmail, apiToken, firebaseToken):
         url = str(urls.urls['hypechat']['userInfo']).format(email=userEmail )
